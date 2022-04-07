@@ -2,7 +2,8 @@ const axios = require("axios");
 const { isEmpty } = require("lodash");
 const { getCategories } = require("../utils/utils");
 const query = async (req, res) => {
-  console.log(req.query);
+  try {
+    console.log(req.query);
   const { q } = req.query;
   const { data } = await axios.get(
     `https://api.mercadolibre.com/sites/MLA/search?q=${q}&limit=4`
@@ -21,6 +22,7 @@ const query = async (req, res) => {
     );
     categories = getCategories(objCategories.values);
   }
+
   const items = data.results.map((item) => ({
     id: item.id,
     title: item.title,
@@ -43,11 +45,47 @@ const query = async (req, res) => {
     items
   };
   res.status(200).json({ ok: true, result });
+  } catch (error) {
+    const {status, message} = error.response.data;
+    res.status(status || 500).json({message});
+  }  
 };
 
-const getProduct = async (req, res) => {
-  console.log(req);
-  res.status(200).json({ ok: true, text: "getProduct" });
+const getProduct = async (req, res) => {  
+  try {    
+    const {id} = req.params;
+    const [item, description] = await axios.all([
+      axios.get(`https://api.mercadolibre.com/items/${id}`),
+      axios.get(`https://api.mercadolibre.com/items/${id}/description`)
+    ]);
+    const { data: dataItem } = item;
+    const {data: dataDescription} = description;
+    const result = {
+      author: {
+        name: "Victor",
+        lastName: "David",
+      },
+      item: {
+        id: dataItem.id,
+        title: dataItem.title,
+        price: {
+          currency: dataItem.currency_id,
+          amount: dataItem.price,
+          decimal: Number((dataItem.price % 1).toFixed(2).substring(2))
+        },
+        picture: dataItem.pictures[0].url,
+        condition: dataItem.condition,
+        free_shipping: dataItem.shipping.free_shipping,
+        sold_quantity: dataItem.sold_quantity,
+        description: dataDescription.plain_text
+      }
+    }
+    res.status(200).json({ ok: true, result });
+  } catch (error) {
+    console.log('####: ', error.response.data)
+    const {status, message} = error.response.data;
+    res.status(status || 500).json({message});
+  }
 };
 
 module.exports = {
