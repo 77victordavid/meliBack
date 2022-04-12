@@ -3,7 +3,6 @@ const { isEmpty } = require("lodash");
 const { getCategories } = require("../utils/utils");
 const query = async (req, res) => {
   try {
-    console.log(req.query);
   const { q } = req.query;
   const { data } = await axios.get(
     `https://api.mercadolibre.com/sites/MLA/search?q=${q}&limit=4`
@@ -34,6 +33,7 @@ const query = async (req, res) => {
     picture: item.thumbnail,
     condition: item.condition,
     free_shipping: item.shipping.free_shipping,
+    state_name: item.address.state_name
   }));
 
   const result = {
