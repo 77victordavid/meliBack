@@ -47,7 +47,7 @@ const query = async (req, res) => {
   res.status(200).json({ ok: true, result });
   } catch (error) {
     const {status, message} = error.response.data;
-    res.status(status || 500).json({message});
+    res.status(status || 500).json({data: message, ok: false});
   }  
 };
 
@@ -84,7 +84,7 @@ const getProduct = async (req, res) => {
   } catch (error) {
     console.log('####: ', error.response.data)
     const {status, message} = error.response.data;
-    res.status(status || 500).json({message});
+    res.status(status || 500).json({data: message, ok: false});
   }
 };
 
